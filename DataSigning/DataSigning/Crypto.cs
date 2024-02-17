@@ -10,11 +10,11 @@ internal class Crypto
 {
     public string SignData(string message, string privateKeyPath)
     {
-        var privayeKey = ReadAsymmetricKeyParameter(privateKeyPath);
+        var privateKey = ReadAsymmetricKeyParameter(privateKeyPath);
 
         //Initialization
         ISigner sig = SignerUtilities.GetSigner("SHA512withRSA");
-        sig.Init(true, privayeKey);
+        sig.Init(true, privateKey);
 
         //Get bytes from message
         var bytes = Encoding.UTF8.GetBytes(message);
@@ -27,25 +27,18 @@ internal class Crypto
         return Convert.ToBase64String(signature);
     }
 
-    public bool VerifyData(string originalMessage, string signedMessage, string publicKeyPath)
+    public bool VerifyData(string originalMessage, string signature, string publicKeyPath)
     {
         var rsaPublicKey = GetPublicKeyCryptoProvider(publicKeyPath);
 
         //Get message from Base64
-        var signedBytes = Convert.FromBase64String(signedMessage);
+        var signatureBytes = Convert.FromBase64String(signature);
 
         //Get bytes from original message
         var bytesToVerify = new UTF8Encoding().GetBytes(originalMessage);
 
         //Verify data
-        return rsaPublicKey.VerifyData(bytesToVerify, CryptoConfig.MapNameToOID("SHA512")!, signedBytes);
-    }
-
-    private AsymmetricKeyParameter ReadAsymmetricKeyParameter(string privateKeyPath)
-    {
-        using var fileStream = File.OpenText(privateKeyPath);
-        var pemReader = new PemReader(fileStream);
-        return (AsymmetricKeyParameter)pemReader.ReadObject();
+        return rsaPublicKey.VerifyData(bytesToVerify, CryptoConfig.MapNameToOID("SHA512")!, signatureBytes);
     }
 
     private RSACryptoServiceProvider GetPublicKeyCryptoProvider(string publicKeyPath)
@@ -61,5 +54,11 @@ internal class Crypto
         var rsaPublicKey = new RSACryptoServiceProvider();
         rsaPublicKey.ImportParameters(rsaParams);
         return rsaPublicKey;
+    }
+    private AsymmetricKeyParameter ReadAsymmetricKeyParameter(string privateKeyPath)
+    {
+        using var fileStream = File.OpenText(privateKeyPath);
+        var pemReader = new PemReader(fileStream);
+        return (AsymmetricKeyParameter)pemReader.ReadObject();
     }
 }
