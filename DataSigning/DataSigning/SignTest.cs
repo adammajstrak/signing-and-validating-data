@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DataSigning;
 
 [TestClass]
-public class CheckSumTest
+public class SignTest
 {
     Crypto crypto = new Crypto();
 
